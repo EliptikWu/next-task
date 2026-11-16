@@ -4,9 +4,11 @@
 
 [Read in English](README.md)
 
-Una skill de Claude Code para avanzar por un backlog **una tarea por sesión**. En cada
+Una skill de agente para avanzar por un backlog **una tarea por sesión**. Usa el formato
+abierto [Agent Skills](https://agentskills.io), así que funciona en Claude Code, Codex,
+Gemini CLI, GitHub Copilot, Cursor y Devin Desktop (antes Windsurf). En cada
 sesión toma la siguiente tarea y la lleva hasta un pull request verificado. Deja una línea
-de traspaso en el repositorio y te pide que escribas `/clear` y `/next-task` otra vez.
+de traspaso en el repositorio y te pide que empieces una sesión nueva (`/clear`) y escribas `/next-task` otra vez.
 
 Escribes dos comandos. Cada tarea gasta un 60 % menos de tokens, sin saltarse las pruebas
 ni la revisión.
@@ -21,7 +23,9 @@ Las cifras salen de 561 pull requests reales de dos proyectos en producción:
   turismo de aventura.
 
 Los datos son el uso de tokens que Claude Code ya guarda en las transcripciones locales de
-cada sesión. Mismo desarrollador, mismo modelo (Claude Opus), noviembre de 2026.
+cada sesión. Mismo desarrollador, mismo modelo (Claude Opus), noviembre de 2026. Las otras
+herramientas no se midieron: la idea debería valer igual, porque todas releen la
+conversación en cada paso, pero no tenemos cifras de ellas.
 
 | | Una tarea por sesión | Tareas encadenadas (≥3 PR en una sesión) | Ahorro (IC 95 %) |
 |---|---|---|---|
@@ -103,7 +107,7 @@ Los guiones están en [`bench/`](bench/).
 - La tabla de calidad muestra que las comprobaciones se *corrieron*. No puede mostrar que
   cada una se hizo bien.
 
-### Mídelo en tus propias sesiones
+### Mídelo en tus propias sesiones de Claude Code
 
 ```bash
 python bench/measure.py ~/.claude/projects/<carpeta-de-tu-proyecto> next-task sessions.json
@@ -124,11 +128,11 @@ python bench/bootstrap.py "mio=sessions.json"
 3. **La hace.** Busca la causa raíz y la arregla en el mecanismo compartido, con el estilo
    del código que la rodea.
 4. **Verifica.** Corre las comprobaciones que correría el CI y después revisa el diff.
-5. **Abre el PR.** Solo fusiona si tu CLAUDE.md lo autoriza expresamente, y solo con las
+5. **Abre el PR.** Solo fusiona si el archivo de instrucciones del proyecto lo autoriza expresamente, y solo con las
    comprobaciones en verde.
 6. **Deja el traspaso.** Escribe una línea en el backlog con el número del PR y lo único
    que la próxima sesión necesita saber.
-7. **Para.** Te pide que escribas `/clear` y después `/next-task`.
+7. **Para.** Te pide una sesión nueva (`/clear`) y después `/next-task`.
 
 Sigue estas reglas de tokens todo el tiempo:
 
@@ -147,15 +151,31 @@ Te contesta en tu idioma; la skill está escrita en inglés porque es lo que lee
 
 ## Instalación
 
-**Como plugin:**
+**Claude Code, como plugin:**
 
 ```
 /plugin marketplace add EliptikWu/next-task
 /plugin install next-task@eliptikwu
 ```
 
-**O a mano:** copia `skills/next-task/` en `~/.claude/skills/next-task/` para todos los
-proyectos, o en `<repo>/.claude/skills/next-task/` para uno solo.
+O copia `skills/next-task/` en `~/.claude/skills/next-task/` (todos los proyectos) o en
+`<repo>/.claude/skills/next-task/` (uno solo).
+
+**Otras herramientas:** copia `skills/next-task/` en `<repo>/.agents/skills/next-task/`
+para un proyecto, o en `~/.agents/skills/next-task/` para todos. Todas las de la tabla
+leen esa carpeta.
+
+| Herramienta | Cómo se usa | Sesión nueva |
+|---|---|---|
+| Codex | `$next-task` | `/new` |
+| Gemini CLI | dile «next task» o «siguiente» (elige la skill sola) | `/clear` |
+| GitHub Copilot en VS Code | `/next-task` | New Chat (Ctrl+N) |
+| GitHub Copilot CLI | `/next-task` | `/clear` |
+| Cursor | `/next-task` | New chat (Cmd/Ctrl+N) |
+| Devin Desktop (antes Windsurf) | `/next-task` | una conversación nueva |
+
+Las instrucciones del proyecto van en el archivo que lea tu herramienta (`CLAUDE.md`,
+`AGENTS.md`, `GEMINI.md`...). La skill sigue ese archivo.
 
 Si un proyecto ya tiene su propia skill para este ciclo, gana la del proyecto.
 

@@ -31,7 +31,7 @@ Rules that keep it cheap to read:
   which nobody reads unless they need history.
 - Items for a human go under `## Waiting on a human`, so the loop never touches them.
 
-To point the skill at a different file or at GitHub issues, add one line to CLAUDE.md:
+To point the skill at a different file or at GitHub issues, add one line to the project's instructions file (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`...):
 
 ```markdown
 Backlog: docs/roadmap.md
@@ -43,7 +43,7 @@ or
 Backlog: GitHub issues, label "ready"
 ```
 
-To let the skill merge its own PRs when checks are green, CLAUDE.md must say so
+To let the skill merge its own PRs when checks are green, the instructions file must say so
 explicitly, for example:
 
 ```markdown

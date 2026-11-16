@@ -1,28 +1,34 @@
 ---
 name: next-task
-description: Does the next pending task of the project end to end in a freshly cleared session, spending as few tokens as possible while still running every check, then asks the user to run `/clear` and `/next-task` again. Picks the first open item of the backlog, takes it to a verified pull request, leaves a one-line handoff for the next session, and stops. Use it whenever the user types /next-task, "next task", "keep going", "what's next", "siguiente", "sigue", or has just run /clear and asks to keep working without saying on what. Not for "continue" in the middle of a task already under way: that means finish the current one. If the user names a task ("/next-task #42"), do that one.
+description: Does the next pending task of the project end to end in a freshly cleared session, spending as few tokens as possible while still running every check, then asks the user to start a fresh session (`/clear`, or a new chat) and run `/next-task` again. Picks the first open item of the backlog, takes it to a verified pull request, leaves a one-line handoff for the next session, and stops. Use it whenever the user types /next-task, "next task", "keep going", "what's next", "siguiente", "sigue", or has just cleared the session and asks to keep working without saying on what. Not for "continue" in the middle of a task already under way, which means finishing the current one. If the user names a task, like /next-task 42, do that one.
 ---
 
 # Next task
 
-**One task per session, then `/clear`.** Every model step re-reads the whole conversation,
+**One task per session, then a fresh session.** Every model step re-reads the whole conversation,
 so a session that chains ten tasks re-reads hundreds of thousands of tokens on every step,
 and stale context makes answers worse, not just pricier. This skill does exactly one task,
 closes it fully, writes what the next session needs into the repo, and hands back.
 
-The project's CLAUDE.md wins over this skill (permissions, scope, security, commands).
-If the project has its own skill for this loop (e.g. `.claude/skills/siguiente`), use
-that one instead and stop reading this.
+The project's instructions file wins over this skill (permissions, scope, security,
+commands). That is `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` or whatever your tool reads;
+below it is called **the instructions file**. If the project has its own skill for this
+loop (e.g. a `siguiente` skill in its skills folder), use that one instead and stop
+reading this.
+
+`/clear` below means "start a fresh session" in your tool: `/clear` in Claude Code, its
+equivalent elsewhere, or a new chat.
 
 ## The rules that save tokens (apply in every step)
 
 1. **The repo is the memory, not the chat.** Everything the next session needs goes into
    the backlog in one line. Nothing is "remembered".
 2. **Read ranges, not files.** `grep -n` to locate, then read only the lines you will use.
-   Never open a whole long doc or log. A folder's own CLAUDE.md is the exception.
+   Never open a whole long doc or log. A folder's own instructions file is the exception.
 3. **Delegate wide searches.** "Where is X used?" across many files goes to a read-only
    subagent (e.g. `Explore`, a cheap model is fine) that must answer in under 15 lines.
-   Don't delegate a lookup whose target you already know.
+   No subagents in your tool → a targeted `grep -rn ... | head` instead. Don't delegate a
+   lookup whose target you already know.
 4. **Trim every command's output.** `2>&1 | tail -n 20` for tests and builds; `--quiet`,
    `--oneline`, `--short` flags wherever they exist. On failure, re-run only the failing
    test with detail.
@@ -60,7 +66,7 @@ gh pr list --state open --author "@me" --json number,headRefName,statusCheckRoll
 ## 2. Pick the task
 
 If the user named one, it is that one. Otherwise find the backlog (first that exists):
-a `Backlog:` line in CLAUDE.md → `BACKLOG.md` → `TODO.md` → `docs/backlog.md` → open
+a `Backlog:` line in the instructions file → `BACKLOG.md` → `TODO.md` → `docs/backlog.md` → open
 GitHub issues, oldest first. No backlog → read `reference/backlog-format.md`, offer to
 create one, and stop.
 
@@ -97,11 +103,11 @@ git checkout <default-branch> && git pull --ff-only && git checkout -b next/<sho
 Diagnose the root cause; fix it in the shared mechanism, not with a special case; match
 the surrounding style. Keep effort proportional: think hard for a subtle bug, not for a
 rename. A decision the docs don't answer → pick the conventional option and record it
-where the project records decisions, unless CLAUDE.md says to ask.
+where the project records decisions, unless the instructions file says to ask.
 
 ## 5. Verify
 
-Run what CI would run for the folders you touched (commands from CLAUDE.md), trimmed.
+Run what CI would run for the folders you touched (commands from the instructions file), trimmed.
 Then review the diff (`code-review` or equivalent; plus a security review if it touches
 auth, permissions, payments, uploads, deployment or migrations). Fix what the review
 finds that is real.
@@ -122,7 +128,7 @@ On the same branch, in the backlog (now that the PR number exists):
 - Anything new you found goes into `## Next` as its own item, not into this task.
 - `## Done` over 20 lines → move the oldest to `docs/backlog-archive.md`.
 
-Commit and push. **Merge only if CLAUDE.md explicitly authorizes merging without
+Commit and push. **Merge only if the instructions file explicitly authorizes merging without
 review**, and only with checks green; otherwise leave it open. Return to the default
 branch.
 
