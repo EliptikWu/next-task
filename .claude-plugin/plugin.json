@@ -1,0 +1,10 @@
+{
+  "name": "next-task",
+  "description": "One task per session: pick the next backlog item, take it to a verified PR, leave a one-line handoff, then /clear and /next-task. Measured 60 % fewer tokens per PR.",
+  "version": "1.0.0",
+  "author": { "name": "EliptikWu" },
+  "homepage": "https://github.com/EliptikWu/next-task",
+  "repository": "https://github.com/EliptikWu/next-task",
+  "license": "Apache-2.0",
+  "keywords": ["tokens", "workflow", "backlog", "context", "clear"]
+}

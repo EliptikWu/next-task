@@ -1,0 +1,16 @@
+{
+  "name": "eliptikwu",
+  "description": "Claude Code skills by EliptikWu (LK Industries).",
+  "owner": {
+    "name": "EliptikWu"
+  },
+  "plugins": [
+    {
+      "name": "next-task",
+      "source": "./",
+      "description": "One task per session, then /clear: measured 60 % fewer tokens per PR without skipping tests or review.",
+      "version": "1.0.0",
+      "license": "Apache-2.0"
+    }
+  ]
+}
